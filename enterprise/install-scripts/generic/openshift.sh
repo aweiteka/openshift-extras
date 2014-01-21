@@ -176,6 +176,7 @@
 #       rhn_user / CONF_RHN_USER
 #       rhn_pass / CONF_RHN_PASS
 #       rhn_reg_actkey / CONF_RHN_REG_ACTKEY - optional activation key
+#       rhn_satellite_url / CONF_RHN_SATELLITE_URL - optional Satellite server
 #   Default: none
 #CONF_INSTALL_METHOD="yum"
 
@@ -776,13 +777,17 @@ configure_subscription()
 
 configure_rhn_channels()
 {
+  sat_server=
+  if [ "$CONF_RHN_SATELLITE_URL" != "" ]; then
+    sat_server="--serverUrl=${CONF_RHN_SATELLITE_URL}"
+  fi
   if [ "x$CONF_RHN_REG_ACTKEY" != x ]; then
     echo "OpenShift: Register to RHN Classic using an activation key"
-    rhnreg_ks --force --activationkey="${CONF_RHN_REG_ACTKEY}" --profilename="$profile_name" || abort_install
+    rhnreg_ks --force --activationkey="${CONF_RHN_REG_ACTKEY}" --profilename="$profile_name" $sat_server || abort_install
   else
     echo "OpenShift: Register to RHN Classic with username and password"
     set +x # don't log password
-    rhnreg_ks --force --profilename="$profile_name" --username "${CONF_RHN_USER}" --password "${CONF_RHN_PASS}" || abort_install
+    rhnreg_ks --force --profilename="$profile_name" --username "${CONF_RHN_USER}" --password "${CONF_RHN_PASS}" $sat_server || abort_install
     set -x
   fi
 
